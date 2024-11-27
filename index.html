@@ -43,6 +43,11 @@
         .buttons button:hover {
             background-color: #45a049;
         }
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -60,6 +65,10 @@
         <h3>النص المصحح:</h3>
         <textarea id="correctedText" readonly></textarea>
     </div>
+
+    <footer>
+        <p>حقوق الطبع والنشر &copy; 2024 <strong>JACK-G2G</strong></p>
+    </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
@@ -89,10 +98,31 @@
 
         function correctText() {
             let text = document.getElementById('textArea').value;
-            // تصحيح إملائي باستخدام TextBlob أو API مشابهة
-            // هنا على سبيل المثال، يتم تصحيح النص يدويًا أو عبر API خارجي
-            text = text.replace('جرّب', 'جرّب'); // مثال بسيط
-            document.getElementById('correctedText').value = text;
+
+            // إرسال النص إلى API لتصحيحه
+            fetch('https://api.languagetool.org/v2/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    text: text,
+                    language: 'ar', // تحديد اللغة العربية
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // معالجة التصحيحات
+                let correctedText = text;
+                data.matches.forEach(match => {
+                    const { offset, length, replacement } = match;
+                    correctedText = correctedText.substring(0, offset) + replacement + correctedText.substring(offset + length);
+                });
+                
+                // عرض النص المصحح
+                document.getElementById('correctedText').value = correctedText;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
     </script>
 </body>
