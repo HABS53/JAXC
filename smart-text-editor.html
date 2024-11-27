@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرر النصوص الذكي</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            background-color: #f7f7f7;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .buttons button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .buttons button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✍️ محرر النصوص الذكي</h1>
+        <textarea id="textArea" placeholder="مرحبًا! جرّب كتابة نص هنا."></textarea>
+
+        <div class="buttons">
+            <button onclick="saveTextAsFile()">💾 حفظ كملف نصي</button>
+            <button onclick="saveTextAsPdf()">📄 حفظ كـ PDF</button>
+            <button onclick="copyText()">📋 نسخ النص</button>
+            <button onclick="correctText()">✅ تصحيح النص</button>
+        </div>
+
+        <h3>النص المصحح:</h3>
+        <textarea id="correctedText" readonly></textarea>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        function saveTextAsFile() {
+            const text = document.getElementById('textArea').value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'text_output.txt';
+            link.click();
+        }
+
+        function saveTextAsPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const text = document.getElementById('textArea').value;
+            doc.text(text, 10, 10);
+            doc.save('text_output.pdf');
+        }
+
+        function copyText() {
+            const text = document.getElementById('textArea').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('تم نسخ النص للحافظة!');
+            });
+        }
+
+        function correctText() {
+            let text = document.getElementById('textArea').value;
+            // تصحيح إملائي باستخدام TextBlob أو API مشابهة
+            // هنا على سبيل المثال، يتم تصحيح النص يدويًا أو عبر API خارجي
+            text = text.replace('جرّب', 'جرّب'); // مثال بسيط
+            document.getElementById('correctedText').value = text;
+        }
+    </script>
+</body>
+</html>
