@@ -1,3 +1,10 @@
+from flask import Flask, render_template_string, request, jsonify
+from textblob import TextBlob
+
+app = Flask(__name__)
+
+# صفحة HTML والـ JavaScript الخاصة بالواجهة الأمامية
+html_code = """
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -77,7 +84,7 @@
             const blob = new Blob([text], { type: 'text/plain' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'text_output.txt';
+            link.download = 'JACM.py';
             link.click();
         }
 
@@ -99,26 +106,16 @@
         function correctText() {
             let text = document.getElementById('textArea').value;
 
-            // إرسال النص إلى API لتصحيحه
-            fetch('https://api.languagetool.org/v2/check', {
+            // إرسال النص إلى خادم Python لتصحيحه
+            fetch('/correct', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    text: text,
-                    language: 'ar', // تحديد اللغة العربية
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
             })
             .then(response => response.json())
             .then(data => {
-                // معالجة التصحيحات
-                let correctedText = text;
-                data.matches.forEach(match => {
-                    const { offset, length, replacement } = match;
-                    correctedText = correctedText.substring(0, offset) + replacement + correctedText.substring(offset + length);
-                });
-                
-                // عرض النص المصحح
-                document.getElementById('correctedText').value = correctedText;
+                // عرض النص المصحح في المربع
+                document.getElementById('correctedText').value = data.corrected_text;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -127,3 +124,23 @@
     </script>
 </body>
 </html>
+"""
+
+@app.route('/')
+def index():
+    return render_template_string(html_code)
+
+@app.route('/correct', methods=['POST'])
+def correct_text():
+    # الحصول على النص من طلب POST
+    text = request.json.get('text')
+
+    # تصحيح النص باستخدام TextBlob
+    blob = TextBlob(text)
+    corrected_text = str(blob.correct())
+
+    # إرسال النص المصحح كاستجابة
+    return jsonify({'corrected_text': corrected_text})
+
+if __name__ == '__main__':
+    app.run(debug=True)
